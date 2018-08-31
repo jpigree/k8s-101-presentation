@@ -1,0 +1,35 @@
+#!/bin/bash -xe
+
+# We will use my helloworld app from now on
+# A webapp wrote in Python/Flask
+vim ../../helloworld/src/app.py
+vim ../../helloworld/src/Dockerfile
+
+gcloud auth configure-docker
+docker run --rm -p 5000:5000 us.gcr.io/k8s-presentation-215001/helloworld:v1
+docker ps
+firefox localhost:5000/hello
+
+# Start a pod with deployment
+DEPLOYMENT_FILE="../../kube-helloworld/helloworld-deployment-v1.yaml"
+vim "$DEPLOYMENT_FILE"
+kubectl apply -f "$DEPLOYMENT_FILE"
+
+kubectl get deployments
+kubectl describe deployment helloworld-v1
+
+# kill -9
+kubectl delete $(kubectl get po -o name) --now
+
+# Probable autoscaling (cluster nodes from 1 to 2)
+
+# Port forward
+kubectl port-forward --namespace default $(kubectl get po -o name | head -n 1) 8080:5000
+firefox localhost:8080/hello
+
+##
+# Recap
+# Create deployment via a yaml manifest (managed containers)
+# Access the pod endpoint via port forwarding
+# Questions?
+##
