@@ -1,0 +1,54 @@
+#!/bin/bash -xe
+
+# On a separate terminal
+watch -d kubectl get pods
+
+# Start a pod without deployment
+kubectl run nginx --image=nginx --port=80 --restart=Never
+
+kubectl edit pod nginx
+kubectl describe pod nginx
+
+# Deletion
+kubectl delete pod nginx
+
+# This wasn't the kubernetes way
+vim nginx.yaml
+kubectl apply -f nginx.yaml
+
+# Live edit pod
+kubectl describe pod nginx
+# Change image tag to 1.14-alpine
+kubectl edit pod nginx
+# Image pulled, container restarted
+kubectl describe pod nginx
+
+kubectl logs nginx -f
+# Port forwarding from cluster to local machine
+kubectl port-forward --namespace default nginx 8080:80
+firefox localhost:8080
+
+# Start a bash shell into the nginx container
+kubectl exec -it nginx /bin/sh
+
+# Edit h1 in index.html
+apk update && apk add vim
+find / -iname index.html
+
+# + F5 because of browser cache
+firefox localhost:8080
+
+# Deletion
+kubectl delete -f nginx.yaml
+
+##
+# Recap
+# Create pod (container)
+# Edit a live pod
+# Create a pod via a yaml manifest
+# Display infos and logs about the pod
+# Get a shell into the pod
+# Access the pod endpoint via port forwarding
+# Cleanup
+# Questions?
+##
