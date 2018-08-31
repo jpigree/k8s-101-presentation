@@ -1,7 +1,7 @@
-#!/bin/bash -xe
+#!/bin/sh -xe
 
 SCRIPTDIR=$(readlink -f "$0" | xargs dirname)
-GCLOUD_REGISTRY_IMAGE="us.gcr.io/k8s-presentation/helloworld"
+GCLOUD_REGISTRY_IMAGE="us.gcr.io/k8s-presentation-215001/helloworld"
 
 docker login -u _json_key -p "$GCLOUD_REGISTRY_TOKEN" https://us.gcr.io
 

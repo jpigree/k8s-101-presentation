@@ -1,0 +1,12 @@
+stages:
+  - publish
+
+publish-docker:
+  stage: publish
+  image: docker:18.05
+  services:
+    - docker:dind
+  script:
+    - helloworld/build.sh
+  tags:
+    - docker
