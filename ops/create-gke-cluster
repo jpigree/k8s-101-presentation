@@ -40,9 +40,14 @@ def argparser():
     )
 
     parser.add_argument(
-        "-n",
-        "--num-nodes",
-        help="The number of nodes to instanciate",
+        "--min-nodes",
+        help="The minimum number of nodes of the node pool",
+        default="1"
+    )
+
+    parser.add_argument(
+        "--max-nodes",
+        help="The maximum number of nodes of the node pool",
         default="2"
     )
 
@@ -71,6 +76,11 @@ def argparser():
     return parser
 
 
+def check_call_print(cmds):
+    print(" ".join(cmds))
+    check_call(cmds)
+
+
 def confirm():
     """
     Ask user to enter Y or N (case-insensitive).
@@ -85,19 +95,20 @@ def confirm():
 
 def create_cluster(opts):
     logging.info("""Creating cluster {} in project {}:
-    number of nodes {}, disk size {}Gb,
+    minimal number of nodes {}, maximal number of nodes {}, disk size {}Gb,
     zone {}, version {},
     addons {}""".format(
                      opts.name,
                      opts.project,
-                     opts.num_nodes,
+                     opts.min_nodes,
+                     opts.max_nodes,
                      opts.disk_size,
                      opts.zone,
                      opts.kube_version,
                      opts.addons
                  ))
     confirm()
-    check_call([
+    check_call_print([
         "gcloud",
         "container",
         "clusters",
@@ -105,10 +116,13 @@ def create_cluster(opts):
         opts.name,
         "--disk-size",
         opts.disk_size,
-        "--num-nodes",
-        opts.num_nodes,
+        "--enable-autoscaling",
+        "--min-nodes",
+        opts.min_nodes,
+        "--max-nodes",
+        opts.max_nodes,
         "--zone",
-       opts.zone,
+        opts.zone,
         "--cluster-version",
         opts.kube_version,
         "--addons",
@@ -119,7 +133,7 @@ def create_cluster(opts):
         "--verbosity=info"
     ])
 
-    check_call([
+    check_call_print([
         "gcloud",
         "container",
         "clusters",

@@ -1,0 +1,53 @@
+./ops/create-gke-cluster dev --min-nodes 1 --max-nodes 3
+
+# Cluster infos
+kubectl cluster-info
+kubectl get nodes
+kubectl describe $(kubectl get nodes -o name | head -n1)
+
+# Not available immediately
+kubectl top nodes
+
+# kubectl configs
+kubectl config view
+
+# Dashboard
+
+# Access api server without authentication
+firefox "<kubernetes-master>/api/v1/namespaces"
+curl -k "<kubernetes-master>/api/v1/namespaces"
+
+# Proxy localhost:8001 -> cluster api server with current kubectl user
+kubectl proxy &
+
+# Access api server
+firefox "localhost:8001/api/v1/namespaces"
+firefox "localhost:8001/api/v1/namespaces/kube-system"
+firefox "localhost:8001/api/v1/namespaces/kube-system/services"
+
+# Open the dashboard
+# Can access services endpoints via the api server using the following type of url:
+# http://localhost:8001/api/v1/namespaces/namespace_name/services/[https:]service_name[:port_name]/proxy
+firefox "http://localhost:8001/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy"
+
+# Get token credential
+kubectl describe secret --namespace kube-system tiller-token-<XXXX>
+
+# Cluster exploration
+
+# Use km to show it in prompt
+kubectl get namespaces
+kubectl config get-contexts
+kubectl config set-context $(kubectl config current-context) --namespace=default
+kubectl get pods
+kubectl config set-context $(kubectl config current-context) --namespace=kube-system
+kubectl get pods
+kubectl config set-context $(kubectl config current-context) --namespace=default
+
+##
+# Recap
+# Create a cluster
+# Browse the cluster dashboard
+# Change current namespace
+# Questions?
+##
