@@ -1,0 +1,186 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import argparse
+import logging
+import sys
+
+from subprocess import check_call
+
+logging.basicConfig(level=logging.INFO, format='[%(levelname)s] %(message)s')
+
+
+def argparser():
+    parser = argparse.ArgumentParser(
+        description="Create a GKE cluster")
+
+    parser.add_argument(
+        "name",
+        help="The cluster name")
+
+    parser.add_argument(
+        "-p",
+        "--project",
+        help="The GCP project ID to install the cluster in",
+        default="k8s-presentation-215001"
+    )
+
+    parser.add_argument(
+        "-k",
+        "--kube-version",
+        help="The Kubernetes version to use",
+        default="latest"
+    )
+
+    parser.add_argument(
+        "-z",
+        "--zone",
+        help="The zone to install the Kubernetes in",
+        default="us-west1-a"
+    )
+
+    parser.add_argument(
+        "-n",
+        "--num-nodes",
+        help="The number of nodes to instanciate",
+        default="2"
+    )
+
+    parser.add_argument(
+        "-m",
+        "--machine-type",
+        help="The type of GCE instances to create",
+        default="n1-standard-2"
+    )
+
+    parser.add_argument(
+        "-s",
+        "--disk-size",
+        help="The disk size of each node instances",
+        default="100"
+    )
+
+    parser.add_argument(
+        "-a",
+        "--addons",
+        help="The addons to install in the cluster",
+        default="HttpLoadBalancing," +
+        "HorizontalPodAutoscaling,KubernetesDashboard"
+    )
+
+    return parser
+
+
+def confirm():
+    """
+    Ask user to enter Y or N (case-insensitive).
+    :return: True if the answer is Y.
+    :rtype: bool
+    """
+    answer = ""
+    while answer not in ["y", "n"]:
+        answer = input("Do you wish to proceed [Y/N]? ").lower()
+    return answer == "y"
+
+
+def create_cluster(opts):
+    logging.info("""Creating cluster {} in project {}:
+    number of nodes {}, disk size {}Gb,
+    zone {}, version {},
+    addons {}""".format(
+                     opts.name,
+                     opts.project,
+                     opts.num_nodes,
+                     opts.disk_size,
+                     opts.zone,
+                     opts.kube_version,
+                     opts.addons
+                 ))
+    confirm()
+    check_call([
+        "gcloud",
+        "container",
+        "clusters",
+        "create",
+        opts.name,
+        "--disk-size",
+        opts.disk_size,
+        "--num-nodes",
+        opts.num_nodes,
+        "--zone",
+       opts.zone,
+        "--cluster-version",
+        opts.kube_version,
+        "--addons",
+        opts.addons,
+        "--project",
+        opts.project,
+        "--enable-autorepair",
+        "--verbosity=info"
+    ])
+
+    check_call([
+        "gcloud",
+        "container",
+        "clusters",
+        "get-credentials",
+        opts.name,
+        "--zone",
+        opts.zone,
+        "--project",
+        opts.project
+    ])
+
+
+def install_helm():
+    logging.info("Installing Helm")
+    check_call([
+        "kubectl",
+        "create",
+        "serviceaccount",
+        "--namespace",
+        "kube-system",
+        "tiller"
+    ])
+
+    check_call([
+        "kubectl",
+        "create",
+        "clusterrolebinding",
+        "tiller-cluster-rule",
+        "--clusterrole=cluster-admin",
+        "--serviceaccount=kube-system:tiller"
+    ])
+
+    check_call([
+        "helm",
+        "init",
+        "--service-account",
+        "tiller",
+        "--upgrade",
+        "--wait"
+    ])
+
+    check_call([
+        "helm",
+        "repo",
+        "update"
+    ])
+
+
+def main():
+    parser = argparser()
+
+    opts = parser.parse_args()
+
+    create_cluster(opts)
+    install_helm()
+
+    logging.info("Your cluster is up and running." +
+                 "You can view its state by typing:" +
+                 "$ kubectl cluster-info"
+                 "$ kubectl get nodes")
+
+
+if __name__ == "__main__":
+    sys.exit(main())

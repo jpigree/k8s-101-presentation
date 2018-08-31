@@ -1,0 +1,68 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import argparse
+import logging
+import sys
+
+from subprocess import check_call
+
+logging.basicConfig(level=logging.INFO, format='[%(levelname)s] %(message)s')
+
+
+def argparser():
+    parser = argparse.ArgumentParser(
+        description="Delete a GKE cluster")
+
+    parser.add_argument(
+        "name",
+        help="The cluster name")
+
+    parser.add_argument(
+        "-p",
+        "--project",
+        help="The GCP project ID to install the cluster in",
+        default="k8s-presentation-215001"
+    )
+
+    parser.add_argument(
+        "-z",
+        "--zone",
+        help="The zone the cluster to delete is in",
+        default="us-west1-a"
+    )
+
+    return parser
+
+
+def delete_cluster(opts):
+    logging.info("""Delete cluster {} in zone {}, project: {}""".format(
+                     opts.name,
+                     opts.zone,
+                     opts.project
+                 ))
+
+    check_call([
+        "gcloud",
+        "container",
+        "clusters",
+        "delete",
+        opts.name,
+        "--zone",
+        opts.zone,
+        "--project",
+        opts.project
+    ])
+
+
+def main():
+    parser = argparser()
+
+    opts = parser.parse_args()
+
+    delete_cluster(opts)
+    logging.info("Your cluster is deleted")
+
+
+if __name__ == "__main__":
+    sys.exit(main())
