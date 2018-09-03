@@ -1,0 +1,31 @@
+#!/bin/bash -xe
+
+# Look at the deployment strategy
+kubectl edit deployment helloworld
+
+# In test-curl
+while true; do curl --connect-timeout 1 helloworld:5000/hello; sleep 1; done
+
+# Update the image used
+ROLLING_UPDATE_FILE="../../helloworld/kubernetes/helloworld-deployment-rollingupdate.yaml"
+DEPLOYMENT_FILE="../../helloworld/kubernetes/helloworld-deployment.yaml"
+SERVICE_FILE="../../helloworld/kubernetes/helloworld-service.yaml"
+# The deployment changes the image tag
+vim "$ROLLING_UPDATE_FILE"
+kubectl apply -f "$ROLLING_UPDATE_FILE"
+
+# Rollout status
+kubectl rollout status deployment helloworld
+
+# Reinitialize to previous
+kubectl apply -f "$DEPLOYMENT_FILE"
+
+# Cleanup
+kubectl delete -f "$DEPLOYMENT_FILE"
+kubectl delete -f "$SERVICE_FILE"
+
+##
+# Recap
+# Perform a rolling update of helloworld
+# Questions?
+##
