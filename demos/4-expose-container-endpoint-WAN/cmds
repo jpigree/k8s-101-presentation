@@ -1,0 +1,30 @@
+#!/bin/bash -xe
+
+# Install the nginx ingress controller
+helm install --name nginx-ingress-controller stable/nginx-ingress --namespace kube-system --set rbac.create=true
+
+# Wait for the LoadBalancer external IP
+kubectl --namespace kube-system get service -w nginx-ingress-controller-controller
+
+# Prints default backend
+EXTERNAL_IP=$(kubectl --namespace kube-system get service nginx-ingress-controller-controller -o json | jq '.status.loadBalancer.ingress[0].ip' | tr -d '"')
+firefox http://$EXTERNAL_IP
+
+# Create an ingress
+INGRESS_FILE="../../helloworld/kubernetes/helloworld-ingress.yaml"
+vim "$INGRESS_FILE"
+kubectl apply -f "$INGRESS_FILE"
+
+kubectl get ingress
+kubectl describe ingress helloworld
+
+firefox http://$EXTERNAL_IP/hello
+
+##
+# Recap
+# Install an ingress-controller
+# Get the load balancer IP
+# Create an Ingress via a yaml manifest
+# HTTP GET on pod via an external IP
+# Questions?
+##

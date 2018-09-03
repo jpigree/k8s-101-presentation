@@ -1,0 +1,20 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: helloworld
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+spec:
+  backend:
+    serviceName: helloworld
+    servicePort: 5000
+
+# With fqdn
+#     rules:
+#       - hosts: helloworld.test.pf
+#         http:
+#         paths:
+#           - path: /hello
+#             backend:
+#               serviceName: helloworld
+#               servicePort: 5000
