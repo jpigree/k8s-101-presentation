@@ -1,14 +1,13 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: helloworld-v1
+  name: helloworld
 spec:
-  replicas: 2
+  replicas: 3
   template:
     metadata:
       labels:
         app: helloworld
-        version: v1
     spec:
       containers:
       - name: helloworld
@@ -18,4 +17,16 @@ spec:
             cpu: "100m"
         imagePullPolicy: IfNotPresent #Always
         ports:
-        - containerPort: 5000
+          - name: http
+            containerPort: 5000
+        livenessProbe:
+          httpGet:
+            path: /hello
+            port: http
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: http
+          periodSeconds: 5

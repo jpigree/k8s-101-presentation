@@ -17,11 +17,11 @@ curl helloworld:5000/hello
 kubectl describe nodes
 
 # Manually scale helloworld pod (via cli but changing replica field in file is the same)
-kubectl scale deployment helloworld-v1 --replicas=3
+kubectl scale deployment helloworld --replicas=3
 # Put replicas to one and exit
-kubectl edit deployment helloworld-v1
+kubectl edit deployment helloworld
 # Rewind
-kubectl scale deployment helloworld-v1 --replicas=4
+kubectl scale deployment helloworld --replicas=4
 
 # Show the load balancing
 curl helloworld:5000/hello

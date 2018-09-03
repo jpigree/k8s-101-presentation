@@ -11,12 +11,12 @@ docker ps
 firefox localhost:5000/hello
 
 # Start a pod with deployment
-DEPLOYMENT_FILE="../../helloworld/kubernetes/helloworld-deployment-v1.yaml"
+DEPLOYMENT_FILE="../../helloworld/kubernetes/helloworld-deployment.yaml"
 vim "$DEPLOYMENT_FILE"
 kubectl apply -f "$DEPLOYMENT_FILE"
 
 kubectl get deployments
-kubectl describe deployment helloworld-v1
+kubectl describe deployment helloworld
 
 # kill -9
 kubectl delete $(kubectl get po -o name) --now
