@@ -117,6 +117,8 @@ def create_cluster(opts):
         "--disk-size",
         opts.disk_size,
         "--enable-autoscaling",
+        "--num-nodes",
+        opts.min_nodes,
         "--min-nodes",
         opts.min_nodes,
         "--max-nodes",
