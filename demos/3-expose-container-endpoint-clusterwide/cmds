@@ -15,3 +15,13 @@ curl helloworld:5000/hello
 
 # Show that they are not necessary on the same nodes
 kubectl describe nodes
+
+# Manually scale helloworld pod (via cli but changing replica field in file is the same)
+kubectl scale deployment helloworld-v1 --replicas=3
+# Put replicas to one and exit
+kubectl edit deployment helloworld-v1
+# Rewind
+kubectl scale deployment helloworld-v1 --replicas=4
+
+# Show the load balancing
+curl helloworld:5000/hello
