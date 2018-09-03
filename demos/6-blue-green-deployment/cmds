@@ -1,0 +1,33 @@
+#!/bin/bash -xe
+
+V1_FILE="../../helloworld/kubernetes/helloworld-deployment-v1.yaml"
+V2_FILE="../../helloworld/kubernetes/helloworld-deployment-v2.yaml"
+V1_SVC_FILE="../../helloworld/kubernetes/helloworld-service-v1.yaml"
+vim "$V1_FILE" "$V2_FILE" "$V1_SVC_FILE"
+
+kubectl apply -f "$V1_FILE"
+kubectl apply -f $V1_SVC_FILE
+
+# In test-curl
+while true; do curl --connect-timeout 1 helloworld:5000/hello; sleep 1; done
+
+# Launch deployment v2
+kubectl apply -f "$V2_FILE"
+
+# Update service to redirect traffic to v2
+kubectl edit svc helloworld
+
+# Delete deployment v1
+kubectl delete -f $V1_FILE
+
+# Blue/Green deployment done
+
+# Cleanup
+kubectl delete -f $V2_FILE
+
+##
+# Recap
+# Perform a blue/green deployment
+# Reroute traffic live
+# Questions?
+##
