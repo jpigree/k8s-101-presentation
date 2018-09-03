@@ -7,6 +7,6 @@ publish-docker:
   services:
     - docker:dind
   script:
-    - helloworld/build.sh
+    - helloworld/src/build.sh
   tags:
     - docker

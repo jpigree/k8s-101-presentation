@@ -11,7 +11,7 @@ docker ps
 firefox localhost:5000/hello
 
 # Start a pod with deployment
-DEPLOYMENT_FILE="../../kube-helloworld/helloworld-deployment-v1.yaml"
+DEPLOYMENT_FILE="../../helloworld/kubernetes/helloworld-deployment-v1.yaml"
 vim "$DEPLOYMENT_FILE"
 kubectl apply -f "$DEPLOYMENT_FILE"
 
