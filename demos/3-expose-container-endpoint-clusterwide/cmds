@@ -1,0 +1,17 @@
+#!/bin/bash -xe
+
+# Create a service
+SERVICE_FILE="../../kube-helloworld/helloworld-service.yaml"
+vim "$SERVICE_FILE"
+kubectl apply -f "$SERVICE_FILE"
+
+kubectl get svc
+kubectl describe svc helloworld
+
+# Access webapp from another container in the cluster
+kubectl run curl-test --rm -i --tty --restart=Never --image ubuntu -- bash
+apt-get update && apt-get install -y curl
+curl helloworld:5000/hello
+
+# Show that they are not necessary on the same nodes
+kubectl describe nodes
