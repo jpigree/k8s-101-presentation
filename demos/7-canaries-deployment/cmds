@@ -1,0 +1,44 @@
+#!/bin/bash -xe
+
+V1_FILE="../../helloworld/kubernetes/helloworld-deployment-v1.yaml"
+V2_FILE="../../helloworld/kubernetes/helloworld-deployment-v2-canary.yaml"
+SVC_FILE="../../helloworld/kubernetes/helloworld-service.yaml"
+vim "$V1_FILE" "$V2_FILE" "$SVC_FILE"
+
+kubectl apply -f "$V1_FILE"
+kubectl apply -f "$SVC_FILE"
+
+# In test-curl
+while true; do curl --connect-timeout 1 helloworld:5000/hello; sleep 1; done
+
+# Launch deployment v2 with one replica
+kubectl apply -f "$V2_FILE"
+
+# Looks fine. Great, scale up v2
+kubectl edit deployment helloworld-v2
+
+# Everything looks fine. Delete deployment v1
+kubectl delete -f $V1_FILE
+k
+# Limitations:
+# - no control over which client hit which version
+# - does not work with stateful apps
+
+# Workarounds:
+# - Redirect traffic depending on a HTTP flag
+# => PR GitHub nginx-ingress: https://github.com/kubernetes/ingress-nginx/pull/2560
+# - Expose 2 paths to the WAN and do Geo-Location based Traffic management to redirect users depending on their location
+
+# Solution:
+# ISTIO => a framework over Kubernetes which gives among other things better traffic routing capabilities
+# => https://istio.io/docs/reference/config/istio.networking.v1alpha3/#HTTPMatchRequest
+# => https://istio.io/docs/reference/config/istio.networking.v1alpha3/#DestinationWeight
+
+# Cleanup
+kubectl delete -f $V2_FILE
+
+##
+# Recap
+# Perform a canary deployment
+# Questions?
+##
