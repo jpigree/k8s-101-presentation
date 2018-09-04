@@ -1,0 +1,44 @@
+#!/bin/bash -xe
+
+V1_FILE="../../helloworld/kubernetes/helloworld-deployment-v1.yaml"
+SVC_FILE="../../helloworld/kubernetes/helloworld-service.yaml"
+
+kubectl apply -f "$V1_FILE"
+kubectl apply -f "$SVC_FILE"
+
+# Set number of replicas to 1
+kubectl edit deployment helloworld-v1
+
+# Ingress is already up
+
+# Set up autoscaling
+kubectl autoscale deployment helloworld-v1 --cpu-percent=50 --min=1 --max=10
+
+# Get hpa status
+kubectl edit hpa
+
+export HELLOWORLD_URL="$(kubectl --namespace kube-system get service nginx-ingress-controller-controller -o json | jq '.status.loadBalancer.ingress[0].ip' | tr -d '"')"
+
+# Monitor HPA
+watch -d kubectl get hpa
+
+# Generate load on helloworld pods
+./loadgen.sh
+./loadgen.sh
+
+# Wait until the first auto scale up
+kubectl describe hpa
+
+# Kill loadgen.sh
+# Will auto scale down in 5 minutes
+
+# Cleanup
+kubectl delete -f  "$V1_FILE"
+kubectl delete -f  "$SVC_FILE"
+kubectl delete hpa helloworld-v1
+
+##
+# Recap
+# Setup autoscaling pods via an horizontal pod autoscaler
+# Questions?
+##
