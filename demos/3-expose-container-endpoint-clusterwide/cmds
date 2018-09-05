@@ -1,11 +1,13 @@
 #!/bin/bash -xe
 
 # Create a service
+DEPLOYMENT_FILE="../../helloworld/kubernetes/helloworld-deployment.yaml"
 SERVICE_FILE="../../helloworld/kubernetes/helloworld-service.yaml"
 vim "$SERVICE_FILE"
 kubectl apply -f "$SERVICE_FILE"
 
 kubectl get svc
+# ClusterIP (ClusterIP, NodePort, LoadBalancer)
 kubectl describe svc helloworld
 
 # Access webapp from another container in the cluster
@@ -13,15 +15,31 @@ kubectl run curl-test --rm -i --tty --restart=Never --image ubuntu -- bash
 apt-get update && apt-get install -y curl
 curl helloworld:5000/hello
 
+# open 3 terminals and show the logs of the 3 webapp when curling
+# to show loadbalancing
+kubectl logs <pod>
+kubectl logs <pod>
+kubectl logs <pod>
+
+# In test-curl: Trigger 404 on purpose to show errors in logs
+while true; do curl --connect-timeout 1 helloworld:5000/hello; sleep 1; done
+
 # Show that they are not necessary on the same nodes
 kubectl describe nodes
 
 # Manually scale helloworld pod (via cli but changing replica field in file is the same)
-kubectl scale deployment helloworld --replicas=3
-# Put replicas to one and exit
-kubectl edit deployment helloworld
-# Rewind
 kubectl scale deployment helloworld --replicas=4
 
-# Show the load balancing
-curl helloworld:5000/hello
+# Show that the new pod has traffic directed on it
+kubectl logs <pod>
+
+# Rewind
+kubectl apply -f "$DEPLOYMENT_FILE"
+
+##
+# Recap
+# Create service via a yaml manifest (service discovery)
+# Access pods endpoint via service
+# LoadBalancing
+# Questions?
+##
